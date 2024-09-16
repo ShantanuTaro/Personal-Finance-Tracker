@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import IncomeTable from './components/IncomeTable';
 import ExpensesTable from './components/ExpensesTable';
-import AddEntryForm from './components/AddEntryForm';
+//import AddEntryForm from './components/AddEntryForm';
 
 function App() {
   const [incomes, setIncomes] = useState([]);
@@ -12,7 +12,8 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const incomeResponse = await axios.get('/api/incomes');
+        const incomeResponse = await axios.get('/api/income');
+        console.log(incomeResponse)
         const expenseResponse = await axios.get('/api/expenses');
         setIncomes(incomeResponse.data);
         setExpenses(expenseResponse.data);
@@ -24,25 +25,7 @@ function App() {
     fetchData();
   }, []);
 
-  // Handle adding new income and sending it to the backend
-  const handleAddIncome = async (income) => {
-    try {
-      const response = await axios.post('/api/incomes', income);
-      setIncomes([...incomes, response.data]);
-    } catch (error) {
-      console.error('Error adding income:', error);
-    }
-  };
 
-  // Handle adding new expense and sending it to the backend
-  const handleAddExpense = async (expense) => {
-    try {
-      const response = await axios.post('/api/expenses', expense);
-      setExpenses([...expenses, response.data]);
-    } catch (error) {
-      console.error('Error adding expense:', error);
-    }
-  };
 
   return (
     <div>
@@ -50,12 +33,12 @@ function App() {
       <div>
         {/* Income Table and Form */}
         <IncomeTable incomes={incomes} />
-        <AddEntryForm onAddEntry={handleAddIncome} type="Income" />
+
       </div>
       <div>
         {/* Expense Table and Form */}
         <ExpensesTable expenses={expenses} />
-        <AddEntryForm onAddEntry={handleAddExpense} type="Expense" />
+ 
       </div>
     </div>
   );
