@@ -1,7 +1,37 @@
 import express from 'express';
 import Expense from '../models/Expense.js';
+import Income from '../models/Income.js';
+import MonthlySummary from '../models/MonthlySummary.js';
 
 const router = express.Router();
+
+// Function to update monthly summary
+const updateMonthlySummary = async (month) => {
+    const year = new Date().getFullYear();
+    const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
+  
+    const startDate = new Date(year, monthIndex, 1);
+    const endDate = new Date(year, monthIndex + 1, 1);
+  
+    const totalIncome = await Income.aggregate([
+      { $match: { date: { $gte: startDate, $lt: endDate } } },
+      { $group: { _id: null, totalIncome: { $sum: '$amount' } } }
+    ]).then(result => result[0]?.totalIncome || 0);
+  
+    const totalExpenses = await Expense.aggregate([
+      { $match: { date: { $gte: startDate, $lt: endDate } } },
+      { $group: { _id: null, totalExpenses: { $sum: '$amount' } } }
+    ]).then(result => result[0]?.totalExpenses || 0);
+  
+    const totalNet = totalIncome - totalExpenses;
+  
+    await MonthlySummary.findOneAndUpdate(
+      { month },
+      { totalIncome, totalExpenses, totalNet },
+      { upsert: true }
+    );
+  };
+
 
 // Get all expenses or filter by month
 router.get('/', async (req, res) => {
@@ -47,10 +77,14 @@ router.post('/', async (req, res) => {
 
     try {
         const newExpense = await expense.save();
+        
+        const month = new Date(req.body.date).toLocaleString('default', { month: 'long' });
+        await updateMonthlySummary(month);
+    
         res.status(201).json(newExpense);
-    } catch (err) {
+      } catch (err) {
         res.status(400).json({ message: err.message });
-    }
+      }
 });
 
 export default router;
