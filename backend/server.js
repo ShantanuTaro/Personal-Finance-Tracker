@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 import incomeRoutes from './routes/income.js';
 import expenseRoutes from './routes/expenses.js';
+import summaryRoutes from './routes/summary.js';
 
 dotenv.config(); // For environment variables
 
@@ -18,6 +19,7 @@ app.use(express.json());  // To parse JSON bodies
 // Routes
 app.use('/api/income', incomeRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/summary', summaryRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })

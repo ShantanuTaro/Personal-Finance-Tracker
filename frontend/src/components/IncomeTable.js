@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const IncomeTable = ({ selectedMonth }) => {
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+  };
+
   // Get current date in YYYY-MM-DD format
   const getCurrentDate = () => {
     const today = new Date();
@@ -55,7 +60,7 @@ const IncomeTable = ({ selectedMonth }) => {
         source: '',
         amount: '',
         tag: '',
-        date: getCurrentDate(), // Reset date to the current date after submission
+        date: newIncome.date, // Reset date to the current date after submission
       });
     } catch (error) {
       console.error('Error adding new income:', error);
@@ -65,7 +70,7 @@ const IncomeTable = ({ selectedMonth }) => {
   return (
     <div>
       <h2>Income for {selectedMonth}</h2>
-      <p>Total Income: {totalIncome}</p>
+      <p>Total Income: {formatCurrency(totalIncome)}</p>
 
       {/* Income table */}
       <table>
@@ -81,7 +86,7 @@ const IncomeTable = ({ selectedMonth }) => {
           {incomes.map((income, index) => (
             <tr key={index}>
               <td>{income.source}</td>
-              <td>{income.amount}</td>
+              <td>{formatCurrency(income.amount)}</td>
               <td>{income.tag}</td>
               <td>{new Date(income.date).toLocaleDateString()}</td>
             </tr>

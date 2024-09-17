@@ -3,6 +3,8 @@ import IncomeTable from './components/IncomeTable';
 import ExpensesTable from './components/ExpensesTable';
 import AddEntryForm from './components/AddEntryForm';
 import './App.css';
+import MonthlySummary from './components/MonthlySummary';
+import IncomeExpenseGraphs from './components/IncomeExpenseGraphs';
 
 const App = () => {
   const [selectedMonth, setSelectedMonth] = useState('January'); // Default to January
@@ -19,7 +21,57 @@ const App = () => {
     <div className='app-container'>
       <h1>Personal Finance Tracker</h1>
 
-      {/* Month Selector */}
+      <div className='tables-container'>
+        <div className="table-wrapper">
+          <IncomeExpenseGraphs/>
+        </div>
+      </div>
+      <div> 
+        <h1></h1>
+      </div>
+
+      <div className='tables-container'>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'January'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'February'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'March'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'April'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'May'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'June'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'July'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'August'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'September'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'October'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'November'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'December'} />
+        </div>
+      </div>
+
+    
+
+    {/* Month Selector */}
       <div className="month-selector">
         {months.map((month) => (
           <button
@@ -30,6 +82,16 @@ const App = () => {
             {month}
           </button>
         ))}
+      </div>
+    
+
+      <div className='tables-container'>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={selectedMonth} />
+        </div>
+      </div>
+      <div> 
+        <h1></h1>
       </div>
 
       {/* Render IncomeTable and ExpensesTable with the selectedMonth */}

@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const ExpensesTable = ({ selectedMonth }) => {
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+  };
+
   // Get current date in YYYY-MM-DD format
   const getCurrentDate = () => {
     const today = new Date();
@@ -55,7 +60,7 @@ const ExpensesTable = ({ selectedMonth }) => {
         source: '',
         amount: '',
         tag: '',
-        date: getCurrentDate(), // Set current date after submission
+        date: newExpense.date, // Set current date after submission
       });
     } catch (error) {
       console.error('Error adding new expense:', error);
@@ -65,7 +70,7 @@ const ExpensesTable = ({ selectedMonth }) => {
   return (
     <div>
       <h2>Expenses for {selectedMonth}</h2>
-      <p>Total Expenses: {totalExpenses}</p>
+      <p>Total Expenses: {formatCurrency(totalExpenses)}</p>
 
       {/* Expenses table */}
       <table>
@@ -81,7 +86,7 @@ const ExpensesTable = ({ selectedMonth }) => {
           {expenses.map((expense, index) => (
             <tr key={index}>
               <td>{expense.source}</td>
-              <td>{expense.amount}</td>
+              <td>{formatCurrency(expense.amount)}</td>
               <td>{expense.tag}</td>
               <td>{new Date(expense.date).toLocaleDateString()}</td>
             </tr>
