@@ -2,19 +2,26 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const ExpensesTable = ({ selectedMonth }) => {
+  // Get current date in YYYY-MM-DD format
+  const getCurrentDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Extracts YYYY-MM-DD from the date
+  };
+
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
-    source: selectedMonth,
+    month: selectedMonth,
+    source: '',
     amount: '',
     tag: '',
-    date: ''
+    date: getCurrentDate(), // Set current date as default value
   });
 
   // Fetch expenses data based on the selected month
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const response = await axios.get(`/api/expenses?source=${selectedMonth}`); // Adjust API endpoint with query param
+        const response = await axios.get(`/api/expenses?month=${selectedMonth}`); // Adjust API endpoint with query param
         setExpenses(response.data);
       } catch (error) {
         console.error('Error fetching expenses data:', error);
@@ -24,7 +31,8 @@ const ExpensesTable = ({ selectedMonth }) => {
     fetchExpenses();
   }, [selectedMonth]); // Re-fetch expenses when selectedMonth changes
 
-  const totalExpenses = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+  // Calculate total expenses (ensure amounts are numbers)
+  const totalExpenses = expenses.reduce((acc, expense) => acc + Number(expense.amount), 0);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -39,9 +47,16 @@ const ExpensesTable = ({ selectedMonth }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/expenses', { ...newExpense, source: selectedMonth }); // Set source to selectedMonth
+      const response = await axios.post('/api/expenses', { ...newExpense, month: selectedMonth }); // Set source to selectedMonth
       setExpenses([...expenses, response.data]); // Add new expense to state
-      setNewExpense({ source: selectedMonth, amount: '', tag: '', date: '' }); // Reset form but retain selectedMonth
+
+      // Reset form but retain selectedMonth and set the current date as default
+      setNewExpense({
+        source: '',
+        amount: '',
+        tag: '',
+        date: getCurrentDate(), // Set current date after submission
+      });
     } catch (error) {
       console.error('Error adding new expense:', error);
     }
@@ -80,8 +95,10 @@ const ExpensesTable = ({ selectedMonth }) => {
         <input
           type="text"
           name="source"
-          value={selectedMonth} // Set source to selectedMonth and make it read-only
-          readOnly
+          placeholder="Source"
+          value={newExpense.source}
+          onChange={handleChange}
+          required
         />
         <input
           type="number"

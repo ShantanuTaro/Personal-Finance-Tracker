@@ -2,19 +2,26 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const IncomeTable = ({ selectedMonth }) => {
+  // Get current date in YYYY-MM-DD format
+  const getCurrentDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Extracts YYYY-MM-DD from the date
+  };
+
   const [incomes, setIncomes] = useState([]);
   const [newIncome, setNewIncome] = useState({
-    source: selectedMonth,
+    month: selectedMonth,
+    source: '',
     amount: '',
     tag: '',
-    date: ''
+    date: getCurrentDate(), // Set current date as default value
   });
 
   // Fetch income data based on the selected month
   useEffect(() => {
     const fetchIncomes = async () => {
       try {
-        const response = await axios.get(`/api/income?source=${selectedMonth}`); // Adjust API endpoint with query param
+        const response = await axios.get(`/api/income?month=${selectedMonth}`); // Adjust API endpoint with query param
         setIncomes(response.data);
       } catch (error) {
         console.error('Error fetching income data:', error);
@@ -24,7 +31,8 @@ const IncomeTable = ({ selectedMonth }) => {
     fetchIncomes();
   }, [selectedMonth]); // Re-fetch incomes when selectedMonth changes
 
-  const totalIncome = incomes.reduce((acc, income) => acc + income.amount, 0);
+  // Calculate total income (ensure amounts are numbers)
+  const totalIncome = incomes.reduce((acc, income) => acc + Number(income.amount), 0);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -39,9 +47,16 @@ const IncomeTable = ({ selectedMonth }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/income', { ...newIncome, source: selectedMonth }); // Set source to selectedMonth
+      const response = await axios.post('/api/income', { ...newIncome, month: selectedMonth }); // Set month to selectedMonth
       setIncomes([...incomes, response.data]); // Add new income to state
-      setNewIncome({ source: selectedMonth, amount: '', tag: '', date: '' }); // Reset form but retain selectedMonth
+
+      // Reset form but retain selectedMonth and set the current date as default
+      setNewIncome({
+        source: '',
+        amount: '',
+        tag: '',
+        date: getCurrentDate(), // Reset date to the current date after submission
+      });
     } catch (error) {
       console.error('Error adding new income:', error);
     }
@@ -80,8 +95,10 @@ const IncomeTable = ({ selectedMonth }) => {
         <input
           type="text"
           name="source"
-          value={selectedMonth} // Set source to selectedMonth and make it read-only
-          readOnly
+          placeholder="Source"
+          value={newIncome.source}
+          onChange={handleChange}
+          required
         />
         <input
           type="number"

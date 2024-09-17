@@ -10,10 +10,17 @@ router.get('/', async (req, res) => {
     try {
         // Check if month is provided
         if (month) {
+            const year = new Date().getFullYear(); // You can adjust this if the year is also passed in the query
+            const monthIndex = new Date(`${month} 1, ${year}`).getMonth(); // Get the month index (0-11)
+
+            const startDate = new Date(year, monthIndex, 1); // First day of the month
+            const endDate = new Date(year, monthIndex + 1, 1); // First day of the next month
+
+            // Find incomes where the 'date' is within the month range
             const incomes = await Income.find({
                 date: {
-                    $gte: new Date(`${month} 1, ${new Date().getFullYear()}`), // Start of the month
-                    $lt: new Date(`${month} 1, ${new Date().getFullYear() + (month === 'December' ? 1 : 0)}`).setMonth(new Date().getMonth() + 1) // End of the month
+                    $gte: startDate, // Start of the month
+                    $lt: endDate // End of the month
                 }
             });
             res.json(incomes);
@@ -27,9 +34,12 @@ router.get('/', async (req, res) => {
     }
 });
 
+
+
 // Add a new income
 router.post('/', async (req, res) => {
     const income = new Income({
+        month: req.body.month,
         source: req.body.source,
         amount: req.body.amount,
         tag: req.body.tag,

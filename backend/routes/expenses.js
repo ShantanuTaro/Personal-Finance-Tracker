@@ -10,26 +10,35 @@ router.get('/', async (req, res) => {
     try {
         // Check if month is provided
         if (month) {
-            const expenses = await Expense.find({
+            const year = new Date().getFullYear(); // You can adjust this if the year is also passed in the query
+            const monthIndex = new Date(`${month} 1, ${year}`).getMonth(); // Get the month index (0-11)
+
+            const startDate = new Date(year, monthIndex, 1); // First day of the month
+            const endDate = new Date(year, monthIndex + 1, 1); // First day of the next month
+
+            // Find incomes where the 'date' is within the month range
+            const incomes = await Expense.find({
                 date: {
-                    $gte: new Date(`${month} 1, ${new Date().getFullYear()}`), // Start of the month
-                    $lt: new Date(`${month} 1, ${new Date().getFullYear() + (month === 'December' ? 1 : 0)}`).setMonth(new Date().getMonth() + 1) // End of the month
+                    $gte: startDate, // Start of the month
+                    $lt: endDate // End of the month
                 }
             });
-            res.json(expenses);
+            res.json(incomes);
         } else {
-            // If no month is provided, return all expenses
-            const expenses = await Expense.find();
-            res.json(expenses);
+            // If no month is provided, return all incomes
+            const incomes = await Expense.find();
+            res.json(incomes);
         }
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
+
 // Add a new expense
 router.post('/', async (req, res) => {
     const expense = new Expense({
+        month: req.body.month,
         source: req.body.source,
         amount: req.body.amount,
         tag: req.body.tag,

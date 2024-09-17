@@ -13,31 +13,31 @@ const App = () => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // Handle month change
-  const handleMonthChange = (e) => {
-    setSelectedMonth(e.target.value); // Set the selected month based on user selection
-  };
+
 
   return (
-    <div>
+    <div className='app-container'>
       <h1>Personal Finance Tracker</h1>
 
       {/* Month Selector */}
-      <label>Select Month: </label>
-      <select value={selectedMonth} onChange={handleMonthChange}>
+      <div className="month-selector">
         {months.map((month) => (
-          <option key={month} value={month}>
+          <button
+            key={month}
+            onClick={() => setSelectedMonth(month)}
+            className={selectedMonth === month ? 'active' : ''}
+          >
             {month}
-          </option>
+          </button>
         ))}
-      </select>
+      </div>
 
       {/* Render IncomeTable and ExpensesTable with the selectedMonth */}
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div style={{ width: '48%' }}>
+      <div className='tables-container'>
+        <div className='table-wrapper'>
           <IncomeTable selectedMonth={selectedMonth} />
         </div>
-        <div style={{ width: '48%' }}>
+        <div className='table-wrapper'>
           <ExpensesTable selectedMonth={selectedMonth} />
         </div>
       </div>
