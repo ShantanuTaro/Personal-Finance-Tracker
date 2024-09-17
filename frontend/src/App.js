@@ -1,47 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import IncomeTable from './components/IncomeTable';
 import ExpensesTable from './components/ExpensesTable';
-//import AddEntryForm from './components/AddEntryForm';
+import AddEntryForm from './components/AddEntryForm';
+import './App.css';
 
-function App() {
-  const [incomes, setIncomes] = useState([]);
-  const [expenses, setExpenses] = useState([]);
+const App = () => {
+  const [selectedMonth, setSelectedMonth] = useState('January'); // Default to January
 
-  // Fetch incomes and expenses from the backend on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const incomeResponse = await axios.get('/api/income');
-        console.log(incomeResponse)
-        const expenseResponse = await axios.get('/api/expenses');
-        setIncomes(incomeResponse.data);
-        setExpenses(expenseResponse.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  // List of months for dropdown or tab navigation
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
-    fetchData();
-  }, []);
-
-
+  // Handle month change
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.target.value); // Set the selected month based on user selection
+  };
 
   return (
     <div>
       <h1>Personal Finance Tracker</h1>
-      <div>
-        {/* Income Table and Form */}
-        <IncomeTable incomes={incomes} />
 
-      </div>
-      <div>
-        {/* Expense Table and Form */}
-        <ExpensesTable expenses={expenses} />
- 
+      {/* Month Selector */}
+      <label>Select Month: </label>
+      <select value={selectedMonth} onChange={handleMonthChange}>
+        {months.map((month) => (
+          <option key={month} value={month}>
+            {month}
+          </option>
+        ))}
+      </select>
+
+      {/* Render IncomeTable and ExpensesTable with the selectedMonth */}
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ width: '48%' }}>
+          <IncomeTable selectedMonth={selectedMonth} />
+        </div>
+        <div style={{ width: '48%' }}>
+          <ExpensesTable selectedMonth={selectedMonth} />
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default App;

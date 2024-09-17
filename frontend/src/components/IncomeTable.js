@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const IncomeTable = () => {
+const IncomeTable = ({ selectedMonth }) => {
   const [incomes, setIncomes] = useState([]);
   const [newIncome, setNewIncome] = useState({
-    source: '',
+    source: selectedMonth,
     amount: '',
     tag: '',
     date: ''
   });
 
-  // Fetch income data from the backend on component mount
+  // Fetch income data based on the selected month
   useEffect(() => {
     const fetchIncomes = async () => {
       try {
-        const response = await axios.get('/api/income'); // Adjust the API endpoint accordingly
+        const response = await axios.get(`/api/income?source=${selectedMonth}`); // Adjust API endpoint with query param
         setIncomes(response.data);
       } catch (error) {
         console.error('Error fetching income data:', error);
@@ -22,7 +22,7 @@ const IncomeTable = () => {
     };
 
     fetchIncomes();
-  }, []);
+  }, [selectedMonth]); // Re-fetch incomes when selectedMonth changes
 
   const totalIncome = incomes.reduce((acc, income) => acc + income.amount, 0);
 
@@ -39,9 +39,9 @@ const IncomeTable = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/income', newIncome); // Adjust API endpoint accordingly
+      const response = await axios.post('/api/income', { ...newIncome, source: selectedMonth }); // Set source to selectedMonth
       setIncomes([...incomes, response.data]); // Add new income to state
-      setNewIncome({ source: '', amount: '', tag: '', date: '' }); // Reset form
+      setNewIncome({ source: selectedMonth, amount: '', tag: '', date: '' }); // Reset form but retain selectedMonth
     } catch (error) {
       console.error('Error adding new income:', error);
     }
@@ -49,7 +49,7 @@ const IncomeTable = () => {
 
   return (
     <div>
-      <h2>Income</h2>
+      <h2>Income for {selectedMonth}</h2>
       <p>Total Income: {totalIncome}</p>
 
       {/* Income table */}
@@ -68,22 +68,20 @@ const IncomeTable = () => {
               <td>{income.source}</td>
               <td>{income.amount}</td>
               <td>{income.tag}</td>
-              <td>{income.date}</td>
+              <td>{new Date(income.date).toLocaleDateString()}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
       {/* Form to add new income */}
-      <h3>Add New Income</h3>
+      <h3>Add New Income for {selectedMonth}</h3>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
           name="source"
-          placeholder="Source"
-          value={newIncome.source}
-          onChange={handleChange}
-          required
+          value={selectedMonth} // Set source to selectedMonth and make it read-only
+          readOnly
         />
         <input
           type="number"

@@ -1,39 +1,55 @@
 import React, { useState } from 'react';
 
 const AddEntryForm = ({ onAddEntry, type }) => {
-  const [source, setSource] = useState('');
-  const [amount, setAmount] = useState('');
-  const [tag, setTag] = useState('');
-  const [date, setDate] = useState('');
+  const [entry, setEntry] = useState({ source: '', amount: '', tag: '', date: '' });
+
+  const handleChange = (e) => {
+    setEntry({
+      ...entry,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onAddEntry({ source, amount: parseFloat(amount), tag, date });
-    setSource('');
-    setAmount('');
-    setTag('');
-    setDate('');
+    onAddEntry(entry);
+    setEntry({ source: '', amount: '', tag: '', date: '' }); // Reset the form
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <h3>Add New {type}</h3>
-      <div>
-        <label>Source:</label>
-        <input value={source} onChange={(e) => setSource(e.target.value)} required />
-      </div>
-      <div>
-        <label>Amount:</label>
-        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-      </div>
-      <div>
-        <label>Tag:</label>
-        <input value={tag} onChange={(e) => setTag(e.target.value)} required />
-      </div>
-      <div>
-        <label>Date:</label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-      </div>
+      <input
+        type="text"
+        name="source"
+        value={entry.source}
+        onChange={handleChange}
+        placeholder="Source"
+        required
+      />
+      <input
+        type="number"
+        name="amount"
+        value={entry.amount}
+        onChange={handleChange}
+        placeholder="Amount"
+        required
+      />
+      <input
+        type="text"
+        name="tag"
+        value={entry.tag}
+        onChange={handleChange}
+        placeholder="Tag"
+        required
+      />
+      <input
+        type="date"
+        name="date"
+        value={entry.date}
+        onChange={handleChange}
+        required
+      />
       <button type="submit">Add {type}</button>
     </form>
   );
