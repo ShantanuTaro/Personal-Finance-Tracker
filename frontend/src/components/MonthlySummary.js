@@ -30,16 +30,16 @@ const MonthlySummary = ({ selectedMonth }) => {
 
   return (
     <div>
-      <h2>Summary for {selectedMonth}</h2>
+      <h3>Summary for {selectedMonth}</h3>
 
       {/* Total Income */}
-      <h3>Total Income: {formatCurrency(summary.totalIncome)}</h3>
+      <h4>Total Income: {formatCurrency(summary.totalIncome)}</h4>
 
       {/* Total Expenses */}
-      <h3>Total Expenses: {formatCurrency(summary.totalExpenses)}</h3>
+      <h4>Total Expenses: {formatCurrency(summary.totalExpenses)}</h4>
 
       {/* Total Net (Income - Expenses) */}
-      <h3>Total Net: {formatCurrency(summary.totalNet)}</h3>
+      <h4>Total Net: {formatCurrency(summary.totalNet)}</h4>
     </div>
   );
 };

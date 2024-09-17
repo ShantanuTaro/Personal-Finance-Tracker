@@ -30,7 +30,48 @@ const App = () => {
         <h1></h1>
       </div>
 
-      {/* Month Selector */}
+      <div className='tables-container'>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'January'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'February'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'March'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'April'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'May'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'June'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'July'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'August'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'September'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'October'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'November'} />
+        </div>
+        <div className="table-wrapper">
+          <MonthlySummary selectedMonth={'December'} />
+        </div>
+      </div>
+
+    
+
+    {/* Month Selector */}
       <div className="month-selector">
         {months.map((month) => (
           <button
