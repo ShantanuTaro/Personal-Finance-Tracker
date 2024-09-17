@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 const IncomeSchema = new mongoose.Schema({
+    month: {
+        type: String,
+        required: [true, 'Month is required'],
+        trim: true
+    },
     source: {
         type: String,
         required: [true, 'Source is required'],
