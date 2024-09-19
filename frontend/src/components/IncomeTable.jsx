@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { setIncome } from '../redux/financeSlice';
 
 const IncomeTable = ({ selectedMonth }) => {
+  const dispatch = useDispatch();
+  const income = useSelector((state) => state.finance.income);
+
+  const predefinedTags = ['Salary', 'Freelance', 'Investment', 'Other'];
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
@@ -13,9 +19,7 @@ const IncomeTable = ({ selectedMonth }) => {
     return today.toISOString().split('T')[0]; // Extracts YYYY-MM-DD from the date
   };
 
-  const [incomes, setIncomes] = useState([]);
   const [newIncome, setNewIncome] = useState({
-    month: selectedMonth,
     source: '',
     amount: '',
     tag: '',
@@ -26,18 +30,18 @@ const IncomeTable = ({ selectedMonth }) => {
   useEffect(() => {
     const fetchIncomes = async () => {
       try {
-        const response = await axios.get(`/api/income?month=${selectedMonth}`); // Adjust API endpoint with query param
-        setIncomes(response.data);
+        const response = await axios.get(`/api/income?month=${selectedMonth}`);
+        dispatch(setIncome(response.data)); // Update Redux store with fetched income data
       } catch (error) {
         console.error('Error fetching income data:', error);
       }
     };
 
     fetchIncomes();
-  }, [selectedMonth]); // Re-fetch incomes when selectedMonth changes
+  }, [selectedMonth, dispatch]); // Re-fetch incomes when selectedMonth changes
 
   // Calculate total income (ensure amounts are numbers)
-  const totalIncome = incomes.reduce((acc, income) => acc + Number(income.amount), 0);
+  const totalIncome = income.reduce((acc, item) => acc + Number(item.amount), 0);
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -52,15 +56,13 @@ const IncomeTable = ({ selectedMonth }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/income', { ...newIncome, month: selectedMonth }); // Set month to selectedMonth
-      setIncomes([...incomes, response.data]); // Add new income to state
-
-      // Reset form but retain selectedMonth and set the current date as default
+      const response = await axios.post('/api/income', { ...newIncome, month: selectedMonth });
+      dispatch(setIncome([...income, response.data])); // Update Redux store with new income
       setNewIncome({
         source: '',
         amount: '',
         tag: '',
-        date: newIncome.date, // Reset date to the current date after submission
+        date: getCurrentDate(), // Reset date to the current date after submission
       });
     } catch (error) {
       console.error('Error adding new income:', error);
@@ -83,12 +85,12 @@ const IncomeTable = ({ selectedMonth }) => {
           </tr>
         </thead>
         <tbody>
-          {incomes.map((income, index) => (
+          {income.map((item, index) => (
             <tr key={index}>
-              <td>{income.source}</td>
-              <td>{formatCurrency(income.amount)}</td>
-              <td>{income.tag}</td>
-              <td>{new Date(income.date).toLocaleDateString()}</td>
+              <td>{item.source}</td>
+              <td>{formatCurrency(item.amount)}</td>
+              <td>{item.tag}</td>
+              <td>{new Date(item.date).toLocaleDateString()}</td>
             </tr>
           ))}
         </tbody>
@@ -113,14 +115,21 @@ const IncomeTable = ({ selectedMonth }) => {
           onChange={handleChange}
           required
         />
-        <input
-          type="text"
+        <label htmlFor="tag">Tag</label>
+        <select
+          id="tag"
           name="tag"
-          placeholder="Tag"
           value={newIncome.tag}
           onChange={handleChange}
           required
-        />
+        >
+          <option value="" disabled>Select a tag</option>
+          {predefinedTags.map((tag) => (
+            <option key={tag} value={tag}>
+              {tag}
+            </option>
+          ))}
+        </select>
         <input
           type="date"
           name="date"

@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { setExpenses } from '../redux/financeSlice';
 
 const ExpensesTable = ({ selectedMonth }) => {
+  const dispatch = useDispatch();
+  const expenses = useSelector((state) => state.finance.expenses);
+
+  const predefinedTags = ['Dining Out', 'Rent/Mortgage', 'Utilities', 'Retail', 'Food', 'Housing', 'Health', 'Transportation', 'Other'];
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
@@ -13,9 +19,7 @@ const ExpensesTable = ({ selectedMonth }) => {
     return today.toISOString().split('T')[0]; // Extracts YYYY-MM-DD from the date
   };
 
-  const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
-    month: selectedMonth,
     source: '',
     amount: '',
     tag: '',
@@ -26,15 +30,15 @@ const ExpensesTable = ({ selectedMonth }) => {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const response = await axios.get(`/api/expenses?month=${selectedMonth}`); // Adjust API endpoint with query param
-        setExpenses(response.data);
+        const response = await axios.get(`/api/expenses?month=${selectedMonth}`);
+        dispatch(setExpenses(response.data)); // Update Redux store with fetched expenses data
       } catch (error) {
         console.error('Error fetching expenses data:', error);
       }
     };
 
     fetchExpenses();
-  }, [selectedMonth]); // Re-fetch expenses when selectedMonth changes
+  }, [selectedMonth, dispatch]); // Re-fetch expenses when selectedMonth changes
 
   // Calculate total expenses (ensure amounts are numbers)
   const totalExpenses = expenses.reduce((acc, expense) => acc + Number(expense.amount), 0);
@@ -52,15 +56,13 @@ const ExpensesTable = ({ selectedMonth }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/expenses', { ...newExpense, month: selectedMonth }); // Set source to selectedMonth
-      setExpenses([...expenses, response.data]); // Add new expense to state
-
-      // Reset form but retain selectedMonth and set the current date as default
+      const response = await axios.post('/api/expenses', { ...newExpense, month: selectedMonth });
+      dispatch(setExpenses([...expenses, response.data])); // Update Redux store with new expense
       setNewExpense({
         source: '',
         amount: '',
         tag: '',
-        date: newExpense.date, // Set current date after submission
+        date: getCurrentDate(), // Reset date to the current date after submission
       });
     } catch (error) {
       console.error('Error adding new expense:', error);
@@ -113,14 +115,21 @@ const ExpensesTable = ({ selectedMonth }) => {
           onChange={handleChange}
           required
         />
-        <input
-          type="text"
+        <label htmlFor="tag">Tag</label>
+        <select
+          id="tag"
           name="tag"
-          placeholder="Tag"
           value={newExpense.tag}
           onChange={handleChange}
           required
-        />
+        >
+          <option value="" disabled>Select a tag</option>
+          {predefinedTags.map((tag) => (
+            <option key={tag} value={tag}>
+              {tag}
+            </option>
+          ))}
+        </select>
         <input
           type="date"
           name="date"

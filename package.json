@@ -13,12 +13,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "build": "react-scripts build",
+    "build": "cd frontend && vite build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd backend && node server.js",
-    "client": "cd frontend && npm start"
+    "client": "cd frontend && npm run dev"
   },
   "eslintConfig": {
     "extends": [
