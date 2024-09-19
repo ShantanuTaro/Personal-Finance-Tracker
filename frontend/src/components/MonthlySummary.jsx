@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 const MonthlySummary = ({ selectedMonth }) => {
+
+  const { income, expenses } = useSelector((state) => state.finance);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
@@ -26,7 +29,7 @@ const MonthlySummary = ({ selectedMonth }) => {
     };
 
     fetchSummary();
-  }, [selectedMonth]);
+  }, [selectedMonth, income, expenses]);
 
   return (
     <div>
