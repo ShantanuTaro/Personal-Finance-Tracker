@@ -5,7 +5,6 @@ import MonthlySummary from '../models/MonthlySummary.js';
 
 const router = express.Router();
 
-// Function to update monthly summary
 const updateMonthlySummary = async (month) => {
     const year = new Date().getFullYear();
     const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
@@ -85,6 +84,29 @@ router.post('/', async (req, res) => {
       } catch (err) {
         res.status(400).json({ message: err.message });
       }
+});
+
+// Update an existing expense
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      req.params.id,
+      {
+        source: req.body.source,
+        amount: req.body.amount,
+        tag: req.body.tag,
+        date: req.body.date
+      },
+      { new: true }
+    );
+
+    const month = new Date(req.body.date).toLocaleString('default', { month: 'long' });
+    await updateMonthlySummary(month);
+
+    res.json(updatedExpense);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
 export default router;

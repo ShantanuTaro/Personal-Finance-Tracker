@@ -13,7 +13,6 @@ const IncomeTable = ({ selectedMonth }) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
   };
 
-  // Get current date in YYYY-MM-DD format
   const getCurrentDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0]; // Extracts YYYY-MM-DD from the date
@@ -26,7 +25,8 @@ const IncomeTable = ({ selectedMonth }) => {
     date: getCurrentDate(), // Set current date as default value
   });
 
-  // Fetch income data based on the selected month
+  const [editingIncomeId, setEditingIncomeId] = useState(null); // Track the income being edited
+
   useEffect(() => {
     const fetchIncomes = async () => {
       try {
@@ -38,12 +38,10 @@ const IncomeTable = ({ selectedMonth }) => {
     };
 
     fetchIncomes();
-  }, [selectedMonth, dispatch]); // Re-fetch incomes when selectedMonth changes
+  }, [selectedMonth, dispatch]);
 
-  // Calculate total income (ensure amounts are numbers)
   const totalIncome = income.reduce((acc, item) => acc + Number(item.amount), 0);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewIncome((prevIncome) => ({
@@ -52,53 +50,53 @@ const IncomeTable = ({ selectedMonth }) => {
     }));
   };
 
-  // Handle form submission to add new income
+  // Handle adding or updating income
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/income', { ...newIncome, month: selectedMonth });
-      dispatch(setIncome([...income, response.data])); // Update Redux store with new income
+      if (editingIncomeId) {
+        // If editing, send a PUT request to update the existing income
+        const response = await axios.put(`/api/income/${editingIncomeId}`, { ...newIncome });
+        dispatch(setIncome(income.map((inc) => (inc._id === editingIncomeId ? response.data : inc))));
+      } else {
+        // If not editing, add a new income
+        const response = await axios.post('/api/income', { ...newIncome, month: selectedMonth });
+        dispatch(setIncome([...income, response.data])); // Update Redux store with new income
+      }
+      // Reset the form and editing state
       setNewIncome({
         source: '',
         amount: '',
         tag: '',
-        date: getCurrentDate(), // Reset date to the current date after submission
+        date: getCurrentDate(),
       });
+      setEditingIncomeId(null);
     } catch (error) {
-      console.error('Error adding new income:', error);
+      console.error('Error adding/updating income:', error);
     }
   };
 
+  // Set up the form for editing when the "Edit" button is clicked
+  const handleEdit = (incomeItem) => {
+    setNewIncome({
+      source: incomeItem.source,
+      amount: incomeItem.amount,
+      tag: incomeItem.tag,
+      date: new Date(incomeItem.date).toISOString().split('T')[0], // Set date in YYYY-MM-DD format
+    });
+    setEditingIncomeId(incomeItem._id); // Set the ID of the income being edited
+  };
+
   return (
-    <div>
-      <h2>Income for {selectedMonth}</h2>
-      <p>Total Income: {formatCurrency(totalIncome)}</p>
 
-      {/* Income table */}
-      <table>
-        <thead>
-          <tr>
-            <th>Source</th>
-            <th>Amount</th>
-            <th>Tag</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {income.map((item, index) => (
-            <tr key={index}>
-              <td>{item.source}</td>
-              <td>{formatCurrency(item.amount)}</td>
-              <td>{item.tag}</td>
-              <td>{new Date(item.date).toLocaleDateString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+    <h1 class="text-xl font-bold leading-none tracking-tight text-gray-900 md:text-xl lg:text-xl dark:text-white">Income for <span class="underline underline-offset-3 decoration-2 decoration-blue-700 dark:decoration-blue-600">{selectedMonth}</span></h1>
+    <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Total Income: {formatCurrency(totalIncome)}</p>
 
-      {/* Form to add new income */}
-      <h3>Add New Income for {selectedMonth}</h3>
-      <form onSubmit={handleSubmit}>
+    <div class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+    <form onSubmit={handleSubmit} class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <div class="bg-white  dark:bg-gray-800 space-x-1">
+      <h3>{editingIncomeId ? 'Edit Income' : 'Add New Income'}</h3>
         <input
           type="text"
           name="source"
@@ -106,6 +104,7 @@ const IncomeTable = ({ selectedMonth }) => {
           value={newIncome.source}
           onChange={handleChange}
           required
+          class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white border"
         />
         <input
           type="number"
@@ -114,16 +113,17 @@ const IncomeTable = ({ selectedMonth }) => {
           value={newIncome.amount}
           onChange={handleChange}
           required
+          class="px-6 py-4 border"
         />
-        <label htmlFor="tag">Tag</label>
         <select
           id="tag"
           name="tag"
           value={newIncome.tag}
           onChange={handleChange}
           required
+          class="px-6 py-4 border"
         >
-          <option value="" disabled>Select a tag</option>
+          <option value="" disabled>Select a Category</option>
           {predefinedTags.map((tag) => (
             <option key={tag} value={tag}>
               {tag}
@@ -136,10 +136,51 @@ const IncomeTable = ({ selectedMonth }) => {
           value={newIncome.date}
           onChange={handleChange}
           required
+          class="px-6 py-4 border"
         />
-        <button type="submit">Add Income</button>
-      </form>
+        <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">{editingIncomeId ? 'Update Income' : 'Add Income'}</button>
+      </div>
+    </form>
     </div>
+      
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">
+                    Source
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Amount
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Category
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Date
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Action
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+          {income.map((item, index) => (
+            <tr key={index} class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{item.source}</th>
+              <td class="px-6 py-4">{formatCurrency(item.amount)}</td>
+              <td class="px-6 py-4">{item.tag}</td>
+              <td class="px-6 py-4">{new Date(item.date).toLocaleDateString()}</td>
+              <td>
+                <button onClick={() => handleEdit(item)} class=" px-6 py-4 font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+    </table>
+
+    </div>
+  
   );
 };
 
