@@ -26,6 +26,8 @@ const ExpensesTable = ({ selectedMonth }) => {
     date: getCurrentDate(), // Set current date as default value
   });
 
+  const [editingExpenseId, setEditingExpenseId] = useState(null); // Track the expense being edited
+
   // Fetch expenses data based on the selected month
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -56,89 +58,128 @@ const ExpensesTable = ({ selectedMonth }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/expenses', { ...newExpense, month: selectedMonth });
-      dispatch(setExpenses([...expenses, response.data])); // Update Redux store with new expense
+      if (editingExpenseId) {
+        // If editing, send a PUT request to update the existing income
+        const response = await axios.put(`/api/expenses/${editingExpenseId}`, { ...newExpense });
+        dispatch(setExpenses(expenses.map((inc) => (inc._id === editingExpenseId ? response.data : inc))));        
+      } else{
+        const response = await axios.post('/api/expenses', { ...newExpense, month: selectedMonth });
+        dispatch(setExpenses([...expenses, response.data])); // Update Redux store with new expense
+      }
       setNewExpense({
         source: '',
         amount: '',
         tag: '',
         date: getCurrentDate(), // Reset date to the current date after submission
       });
+      setEditingExpenseId(null);
     } catch (error) {
       console.error('Error adding new expense:', error);
     }
   };
 
+  // Set up the form for editing when the "Edit" button is clicked
+  const handleEdit = (expenseItem) => {
+    setNewExpense({
+      source: expenseItem.source,
+      amount: expenseItem.amount,
+      tag: expenseItem.tag,
+      date: new Date(expenseItem.date).toISOString().split('T')[0], // Set date in YYYY-MM-DD format
+    });
+    setEditingExpenseId(expenseItem._id); // Set the ID of the income being edited
+  };
+
   return (
-    <div>
-      <h2>Expenses for {selectedMonth}</h2>
-      <p>Total Expenses: {formatCurrency(totalExpenses)}</p>
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+      <h1 class="text-xl font-bold leading-none tracking-tight text-gray-900 md:text-xl lg:text-xl dark:text-white">Expenses for <span class="underline underline-offset-3 decoration-2 decoration-blue-700 dark:decoration-blue-600">{selectedMonth}</span></h1>
+      <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Total Expenses: {formatCurrency(totalExpenses)}</p>
+
+      <div class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+       <form onSubmit={handleSubmit} class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div class="bg-white  dark:bg-gray-800 space-x-1">
+        <h3>{editingExpenseId ? 'Edit Expense' : 'Add New Expense'}</h3>
+          <input
+            type="text"
+            name="source"
+            placeholder="Source"
+            value={newExpense.source}
+            onChange={handleChange}
+            required
+            class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white border"
+          />
+          <input
+            type="number"
+            name="amount"
+            placeholder="Amount"
+            value={newExpense.amount}
+            onChange={handleChange}
+            required
+            class="px-6 py-4 border"
+          />
+          <select
+            id="tag"
+            name="tag"
+            value={newExpense.tag}
+            onChange={handleChange}
+            required
+            class="px-6 py-4 border"
+          >
+            <option value="" disabled>Select a Category</option>
+            {predefinedTags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+          <input
+            type="date"
+            name="date"
+            value={newExpense.date}
+            onChange={handleChange}
+            required
+            class="px-6 py-4 border"
+          />
+          <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">{editingExpenseId ? 'Update Expense' : 'Add Expense'}</button>
+        </div>
+      </form>
+    </div>
 
       {/* Expenses table */}
-      <table>
-        <thead>
-          <tr>
-            <th>Source</th>
-            <th>Amount</th>
-            <th>Tag</th>
-            <th>Date</th>
-          </tr>
+      <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">
+                    Source
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Amount
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Category
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Date
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Action
+                </th>
+            </tr>
         </thead>
+
         <tbody>
           {expenses.map((expense, index) => (
-            <tr key={index}>
-              <td>{expense.source}</td>
-              <td>{formatCurrency(expense.amount)}</td>
-              <td>{expense.tag}</td>
-              <td>{new Date(expense.date).toLocaleDateString()}</td>
+            <tr key={index} class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{expense.source}</th>
+              <td class="px-6 py-4">{formatCurrency(expense.amount)}</td>
+              <td class="px-6 py-4">{expense.tag}</td>
+              <td class="px-6 py-4">{new Date(expense.date).toLocaleDateString()}</td>
+              <td>
+                <button onClick={() => handleEdit(expense)} class=" px-6 py-4 font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      {/* Form to add new expense */}
-      <h3>Add New Expense for {selectedMonth}</h3>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="source"
-          placeholder="Source"
-          value={newExpense.source}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="number"
-          name="amount"
-          placeholder="Amount"
-          value={newExpense.amount}
-          onChange={handleChange}
-          required
-        />
-        <label htmlFor="tag">Tag</label>
-        <select
-          id="tag"
-          name="tag"
-          value={newExpense.tag}
-          onChange={handleChange}
-          required
-        >
-          <option value="" disabled>Select a tag</option>
-          {predefinedTags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          name="date"
-          value={newExpense.date}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Add Expense</button>
-      </form>
     </div>
   );
 };
