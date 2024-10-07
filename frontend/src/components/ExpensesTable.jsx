@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setExpenses } from '../redux/financeSlice';
+import useAxiosWithAuth from '../hooks/useAxiosWithAuth';
 
 const ExpensesTable = ({ selectedMonth }) => {
   const dispatch = useDispatch();
   const expenses = useSelector((state) => state.finance.expenses);
+  const axios = useAxiosWithAuth();
 
   const predefinedTags = ['Dining Out', 'Rent/Mortgage', 'Utilities', 'Retail', 'Food', 'Housing', 'Health', 'Transportation', 'Other'];
 
@@ -13,7 +14,6 @@ const ExpensesTable = ({ selectedMonth }) => {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
   };
 
-  // Get current date in YYYY-MM-DD format
   const getCurrentDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0]; // Extracts YYYY-MM-DD from the date
@@ -28,7 +28,6 @@ const ExpensesTable = ({ selectedMonth }) => {
 
   const [editingExpenseId, setEditingExpenseId] = useState(null); // Track the expense being edited
 
-  // Fetch expenses data based on the selected month
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -42,7 +41,7 @@ const ExpensesTable = ({ selectedMonth }) => {
     fetchExpenses();
   }, [selectedMonth, dispatch]); // Re-fetch expenses when selectedMonth changes
 
-  // Calculate total expenses (ensure amounts are numbers)
+
   const totalExpenses = expenses.reduce((acc, expense) => acc + Number(expense.amount), 0);
 
   // Handle form input changes
@@ -91,8 +90,8 @@ const ExpensesTable = ({ selectedMonth }) => {
 
   return (
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-      <h1 class="text-xl font-bold leading-none tracking-tight text-gray-900 md:text-xl lg:text-xl dark:text-white">Expenses for <span class="underline underline-offset-3 decoration-2 decoration-blue-700 dark:decoration-blue-600">{selectedMonth}</span></h1>
-      <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Total Expenses: {formatCurrency(totalExpenses)}</p>
+      <h1 class="px-5 text-xl font-bold leading-none tracking-tight text-gray-900 md:text-xl lg:text-xl dark:text-white">Expenses for <span class="underline underline-offset-3 decoration-2 decoration-blue-700 dark:decoration-blue-600">{selectedMonth}</span></h1>
+      <p class="px-5 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Total Expenses: {formatCurrency(totalExpenses)}</p>
 
       <div class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
        <form onSubmit={handleSubmit} class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">

@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 const ExpenseSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Reference the User model
+        required: true,
+    },
     month: {
         type: String,
         required: [true, 'Month is required'],

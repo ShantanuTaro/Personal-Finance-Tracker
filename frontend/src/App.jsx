@@ -1,68 +1,57 @@
-import React, { useState } from 'react';
-import IncomeTable from './components/IncomeTable';
-import ExpensesTable from './components/ExpensesTable';
+import React from 'react';
 import './App.css';
-import MonthlySummary from './components/MonthlySummary';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import IncomeExpenseGraphs from './components/IncomeExpenseGraphs';
 import MonthlyCards from './components/MonthlyCards';
+import SignUp from './components/SignUp';
+import Login from './components/Login';
+import Navbar from './components/Navbar';
+import PrivateRoute from './components/PrivateRoute';
+
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setToken } from './redux/authSlice';
 
 const App = () => {
-  const [selectedMonth, setSelectedMonth] = useState('January'); // Default to January
+  
+  const dispatch = useDispatch();
 
-  // List of months for dropdown or tab navigation
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      dispatch(setToken(token)); // Restore the token from localStorage on app load
+    }
+  }, [dispatch]);
 
 
   return (
-    <div className='app-container'>
-      <h1>Personal Finance Tracker</h1>
+    <Router>
 
-      <div class="container mx-auto p-4">
-          <IncomeExpenseGraphs/>
+      <Navbar />
+      <div className='app-container'>
+        <Routes>
+          {/* Route for the dashboard (accessible after login) */}
+          <Route path="/dashboard" element={
+            <PrivateRoute>
+              <div>
+                <div className="container mx-auto p-4">
+                  <IncomeExpenseGraphs />
+                </div>
+                <div className="p-4">
+                  <MonthlyCards />
+                </div>
+              </div>
+            </PrivateRoute>
+          } />
+          
+          {/* Route for sign-up page */}
+          <Route path="/signup" element={<SignUp />} />
+          
+          {/* Route for login page */}
+          <Route path="/" element={<Login />} />
+        </Routes>
       </div>
-
-      <div class="p-4">
-          <MonthlyCards/>
-      </div>
-      
-
-    {/* Month Selector */}
-      <div className="month-selector">
-        {months.map((month) => (
-          <button
-            key={month}
-            onClick={() => setSelectedMonth(month)}
-            className={selectedMonth === month ? 'active' : ''}
-          >
-            {month}
-          </button>
-        ))}
-      </div>
-    
-
-      <div className='tables-container'>
-        <div className="table-wrapper">
-          <MonthlySummary selectedMonth={selectedMonth} />
-        </div>
-      </div>
-      <div> 
-        <h1></h1>
-      </div>
-
-      {/* Render IncomeTable and ExpensesTable with the selectedMonth */}
-      <div className='tables-container'>
-        <div className='table-wrapper'>
-          <IncomeTable selectedMonth={selectedMonth} />
-        </div>
-        <div className='table-wrapper'>
-          <ExpensesTable selectedMonth={selectedMonth} />
-        </div>
-      </div>
-    </div>
+    </Router>
   );
 };
 
