@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setIncome } from '../redux/financeSlice';
+import useAxiosWithAuth from '../hooks/useAxiosWithAuth';
 
 const IncomeTable = ({ selectedMonth }) => {
   const dispatch = useDispatch();
   const income = useSelector((state) => state.finance.income);
+  const axios = useAxiosWithAuth();
 
   const predefinedTags = ['Salary', 'Freelance', 'Investment', 'Other'];
 
@@ -40,7 +41,7 @@ const IncomeTable = ({ selectedMonth }) => {
     fetchIncomes();
   }, [selectedMonth, dispatch]);
 
-  const totalIncome = income.reduce((acc, item) => acc + Number(item.amount), 0);
+  const totalIncome = income.reduce((acc, income) => acc + Number(income.amount), 0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,7 +61,7 @@ const IncomeTable = ({ selectedMonth }) => {
         dispatch(setIncome(income.map((inc) => (inc._id === editingIncomeId ? response.data : inc))));
       } else {
         // If not editing, add a new income
-        const response = await axios.post('/api/income', { ...newIncome, month: selectedMonth });
+        const response = await axios.post('/api/income', { ...newIncome, month: selectedMonth});
         dispatch(setIncome([...income, response.data])); // Update Redux store with new income
       }
       // Reset the form and editing state
@@ -90,8 +91,8 @@ const IncomeTable = ({ selectedMonth }) => {
   return (
 
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    <h1 class="text-xl font-bold leading-none tracking-tight text-gray-900 md:text-xl lg:text-xl dark:text-white">Income for <span class="underline underline-offset-3 decoration-2 decoration-blue-700 dark:decoration-blue-600">{selectedMonth}</span></h1>
-    <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Total Income: {formatCurrency(totalIncome)}</p>
+    <h1 class="px-5 text-xl font-bold leading-none tracking-tight text-gray-900 md:text-xl lg:text-xl dark:text-white">Income for <span class="underline underline-offset-3 decoration-2 decoration-blue-700 dark:decoration-blue-600">{selectedMonth}</span></h1>
+    <p class="px-5 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Total Income: {formatCurrency(totalIncome)}</p>
 
     <div class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
     <form onSubmit={handleSubmit} class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
@@ -165,22 +166,20 @@ const IncomeTable = ({ selectedMonth }) => {
         </thead>
 
         <tbody>
-          {income.map((item, index) => (
+          {income.map((income, index) => (
             <tr key={index} class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{item.source}</th>
-              <td class="px-6 py-4">{formatCurrency(item.amount)}</td>
-              <td class="px-6 py-4">{item.tag}</td>
-              <td class="px-6 py-4">{new Date(item.date).toLocaleDateString()}</td>
+              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{income.source}</th>
+              <td class="px-6 py-4">{formatCurrency(income.amount)}</td>
+              <td class="px-6 py-4">{income.tag}</td>
+              <td class="px-6 py-4">{new Date(income.date).toLocaleDateString()}</td>
               <td>
-                <button onClick={() => handleEdit(item)} class=" px-6 py-4 font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</button>
+                <button onClick={() => handleEdit(income)} class=" px-6 py-4 font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</button>
               </td>
             </tr>
           ))}
         </tbody>
     </table>
-
     </div>
-  
   );
 };
 

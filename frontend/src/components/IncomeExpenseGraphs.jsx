@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import ApexCharts from 'react-apexcharts';
 import { useSelector } from 'react-redux';
+import useAxiosWithAuth from '../hooks/useAxiosWithAuth';
 
 const IncomeExpenseGraphs = () => {
-
+  const axios = useAxiosWithAuth();
   const { income, expenses, summaries } = useSelector((state) => state.finance);
 
   const [chartData, setChartData] = useState({
@@ -16,6 +16,7 @@ const IncomeExpenseGraphs = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get('/api/summary/all');
+        console.log(response)
         const summaries = response.data;
 
         const allMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

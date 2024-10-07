@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useSelector } from 'react-redux';
+import useAxiosWithAuth from '../hooks/useAxiosWithAuth';
 
 const MonthlySummary = ({ selectedMonth }) => {
-
+  const axios = useAxiosWithAuth();
   const { income, expenses } = useSelector((state) => state.finance);
 
   const formatCurrency = (amount) => {
@@ -22,7 +22,6 @@ const MonthlySummary = ({ selectedMonth }) => {
       try {
         const response = await axios.get(`/api/summary?month=${selectedMonth}`);
         setSummary(response.data);
-        console.log(response.data);
       } catch (error) {
         console.error('Error fetching summary data:', error);
       }
